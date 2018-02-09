@@ -38,15 +38,6 @@
       <HintPath>..\..\ffxiv_actor\ActorConsole\bin\Debug\ACT\Advanced Combat Tracker.exe</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.WindowsAPICodePack-Core.1.1.0.2\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.WindowsAPICodePack-Shell.1.1.0.0\lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack.ShellExtensions, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.WindowsAPICodePack-Shell.1.1.0.0\lib\Microsoft.WindowsAPICodePack.ShellExtensions.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -64,9 +55,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Windows">
-      <HintPath>C:\Program Files (x86)\Windows Kits\8.1\References\CommonConfiguration\Neutral\Windows.winmd</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data.cs" />
@@ -76,6 +64,12 @@
     <Compile Include="DataModel\Instance.cs" />
     <Compile Include="DataModel\Language.cs" />
     <Compile Include="DataModel\Roulette.cs" />
+    <Compile Include="Toast.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Toast.Designer.cs">
+      <DependentUpon>Toast.cs</DependentUpon>
+    </Compile>
     <Compile Include="Localization.cs" />
     <Compile Include="MainControl.cs">
       <SubType>UserControl</SubType>
@@ -96,13 +90,6 @@
     <Compile Include="Network\TcpTable.cs" />
     <Compile Include="ProcessNet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Shell\IPersistFile.cs" />
-    <Compile Include="Shell\IPropertyStore.cs" />
-    <Compile Include="Shell\IShellLinkW.cs" />
-    <Compile Include="Shell\CShellLink.cs" />
-    <Compile Include="Shell\ShellIidGuid.cs" />
-    <Compile Include="Shell\ShortCutCreator.cs" />
-    <Compile Include="Shell\STGM.cs" />
     <Compile Include="WebInteractions.cs" />
     <EmbeddedResource Include="MainControl.resx">
       <DependentUpon>MainControl.cs</DependentUpon>
@@ -116,6 +103,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Toast.resx">
+      <DependentUpon>Toast.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

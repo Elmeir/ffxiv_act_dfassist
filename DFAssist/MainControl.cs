@@ -15,17 +15,13 @@ using System.Net;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using Windows.UI.Notifications;
 using Advanced_Combat_Tracker;
 using DFAssist.DataModel;
-using DFAssist.Shell;
 
 namespace DFAssist
 {
     public class MainControl : UserControl, IActPluginV1
     {
-        private const string AppId = "Advanced Combat Tracker";
-
         private readonly string _settingsFile;
         private readonly ConcurrentStack<string> _telegramSelectedFates;
         private readonly ConcurrentDictionary<int, ProcessNet> _networks;
@@ -35,6 +31,7 @@ namespace DFAssist
         private bool _pluginInitializing;
         private bool _isDutyAlertEnabled;
         private bool _isTelegramEnabled;
+        private bool _mainFormIsLoaded;
         private bool _isToastNotificationEnabled;
         private string _checkedFates;
         private Timer _timer;
@@ -69,6 +66,21 @@ namespace DFAssist
 
             _networks = new ConcurrentDictionary<int, ProcessNet>();
             _telegramSelectedFates = new ConcurrentStack<string>();
+
+            ActGlobals.oFormActMain.Load += ActMainFormOnLoad;
+        }
+
+        private void MonitorProcess()
+        {
+            if (_timer == null)
+            {
+                _timer = new Timer {Interval = 30000};
+                _timer.Tick += Timer_Tick;
+            }
+
+            _timer.Enabled = true;
+
+            UpdateProcesses();
         }
 
         /// <summary>
@@ -297,13 +309,10 @@ namespace DFAssist
         #region IActPluginV1 Implementations
         public void InitPlugin(TabPage pluginScreenSpace, Label pluginStatusText)
         {
-            if(_pluginInitializing)
+            if (_pluginInitializing)
                 return;
 
             _pluginInitializing = true;
-            // The shortcut must be created to work with windows 8/10 Toasts
-            ShortCutCreator.TryCreateShortcut(AppId, AppId);
-
             _isPluginEnabled = true;
             _labelStatus = pluginStatusText;
 
@@ -313,7 +322,8 @@ namespace DFAssist
                     new Language {Name = "한국어", Code = "ko-kr"},
                     new Language {Name = "日本語", Code = "ja-jp"},
                     new Language {Name = "Français", Code = "fr-fr"}
-                };
+            };
+
             _languageComboBox.DisplayMember = "Name";
             _languageComboBox.ValueMember = "Code";
 
@@ -328,18 +338,11 @@ namespace DFAssist
             pluginScreenSpace.Controls.Add(this);
             _xmlSettingsSerializer = new SettingsSerializer(this);
 
-            if (_timer == null)
-            {
-                _timer = new Timer { Interval = 30000 };
-                _timer.Tick += Timer_Tick;
-            }
-
-            _timer.Enabled = true;
-
-            UpdateProcesses();
-
             LoadSettings();
             LoadFates();
+
+            if(_mainFormIsLoaded)
+                MonitorProcess();
 
             _pluginInitializing = false;
         }
@@ -361,6 +364,8 @@ namespace DFAssist
             }
 
             _timer.Enabled = false;
+            ActGlobals.oFormActMain.Load -= ActMainFormOnLoad;
+
             SaveSettings();
         }
         #endregion
@@ -443,6 +448,7 @@ namespace DFAssist
             var processes = new List<Process>();
             processes.AddRange(Process.GetProcessesByName("ffxiv"));
             processes.AddRange(Process.GetProcessesByName("ffxiv_dx11"));
+            processes.AddRange(Process.GetProcessesByName("notepad++"));
 
             foreach (var process in processes)
             {
@@ -579,26 +585,12 @@ namespace DFAssist
             }
         }
 
-        private static void ToastWindowNotification(string title, string message)
+        private void ToastWindowNotification(string title, string message)
         {
             try
             {
-                // Get a toast XML template
-                var toastXml = ToastNotificationManager.GetTemplateContent(ToastTemplateType.ToastImageAndText03);
-
-
-                var stringElements = toastXml.GetElementsByTagName("text");
-                if (stringElements.Length < 2)
-                {
-                    Logger.Error("l-toast-notification-error");
-                    return;
-                }
-
-                stringElements[0].AppendChild(toastXml.CreateTextNode(title));
-                stringElements[1].AppendChild(toastXml.CreateTextNode(message));
-
-                var toast = new ToastNotification(toastXml);
-                ToastNotificationManager.CreateToastNotifier(AppId).Show(toast);
+                var toast = new Toast(title, message, _networks);
+                toast.Show();
             }
             catch (Exception e)
             {
@@ -753,6 +745,12 @@ namespace DFAssist
             _richTextBox1.Clear();
         }
 
+        private void ActMainFormOnLoad(object sender, EventArgs e)
+        {
+            _mainFormIsLoaded = true;
+            MonitorProcess();
+        }
+
         private void EnableLoggingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (!_enableLoggingCheckBox.Checked)
@@ -786,7 +784,7 @@ namespace DFAssist
             _xmlSettingsSerializer.AddControlSetting(_telegramTokenTextBox.Name, _telegramTokenTextBox);
             _xmlSettingsSerializer.AddControlSetting(_dutyFinderAlertCheckBox.Name, _dutyFinderAlertCheckBox);
             _xmlSettingsSerializer.AddControlSetting(_enableLoggingCheckBox.Name, _enableLoggingCheckBox);
-            _xmlSettingsSerializer.AddStringSetting("CheckedFates");
+            _xmlSettingsSerializer.AddStringSetting("_checkedFates");
 
             if (File.Exists(_settingsFile))
             {
