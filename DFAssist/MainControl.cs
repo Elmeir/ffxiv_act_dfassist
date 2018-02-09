@@ -448,7 +448,6 @@ namespace DFAssist
             var processes = new List<Process>();
             processes.AddRange(Process.GetProcessesByName("ffxiv"));
             processes.AddRange(Process.GetProcessesByName("ffxiv_dx11"));
-            processes.AddRange(Process.GetProcessesByName("notepad++"));
 
             foreach (var process in processes)
             {
