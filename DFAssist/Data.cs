@@ -24,6 +24,9 @@ namespace DFAssist
 
         private static void Fill(string json, string language)
         {
+            if (string.IsNullOrWhiteSpace(json))
+                return;
+
             try
             {
                 var data = JsonConvert.DeserializeObject<GameData>(json);
@@ -49,7 +52,7 @@ namespace DFAssist
 
                     if (Initialized)
                     {
-                        Logger.Info( "l-data-updated", Version);
+                        Logger.Info("l-data-updated", Version);
                     }
 
                     Initialized = true;
