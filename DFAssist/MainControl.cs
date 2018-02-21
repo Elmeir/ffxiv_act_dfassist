@@ -13,6 +13,7 @@ using System.EnterpriseServices.Internal;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -646,6 +647,8 @@ namespace DFAssist
             {
                 var toast = new Toast(title, message, _networks);
                 toast.Show();
+                ShowWindow(toast.Handle, 9);
+                toast.Activate();
             }
             catch (Exception e)
             {
@@ -915,6 +918,12 @@ namespace DFAssist
                 Logger.Exception(ex, "l-settings-save-error");
             }
         }
+        #endregion
+
+        #region Interops
+        // Activate or minimize a window
+        [DllImportAttribute("User32.DLL")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
         #endregion
     }
 }
