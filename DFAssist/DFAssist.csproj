@@ -65,6 +65,7 @@
     <Compile Include="DataModel\Instance.cs" />
     <Compile Include="DataModel\Language.cs" />
     <Compile Include="DataModel\Roulette.cs" />
+    <Compile Include="FormAnimator.cs" />
     <Compile Include="Toast.cs">
       <SubType>Form</SubType>
     </Compile>

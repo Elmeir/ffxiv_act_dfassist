@@ -11,45 +11,33 @@ namespace DFAssist
     {
         private readonly string _title;
         private readonly string _message;
+        private readonly FormAnimator _animator;
         private readonly ConcurrentDictionary<int, ProcessNet> _networks;
 
+        private bool _allowFocus;
         private Timer _timer;
+        private IntPtr _currentForegroundWindow;
 
         public Toast(string title, string message, ConcurrentDictionary<int, ProcessNet> networks)
         {
+            InitializeComponent();
+
             _title = title;
             _message = message;
             _networks = networks;
-            InitializeComponent();
+            _animator = new FormAnimator(this, FormAnimator.AnimationMethod.Slide, FormAnimator.AnimationDirection.Left, 500);
 
             ShowInTaskbar = false;
             FormBorderStyle = FormBorderStyle.None;
             TopMost = true;
         }
 
-        protected override void OnMouseDown(MouseEventArgs e)
+        public new void Show()
         {
-            base.OnMouseDown(e);
-            Close();
-        }
+            // Determine the current foreground window so it can be reactivated each time this form tries to get the focus
+            _currentForegroundWindow = NativeMethods.GetForegroundWindow();
 
-        protected override void OnLoad(EventArgs e)
-        {
-            PlaceLowerRight();
-            BackColor = DefaultForeColor;
-            ForeColor = DefaultBackColor;
-
-            label1.Font = new Font("Serif", 18, FontStyle.Bold);
-            label1.ForeColor = Color.White;
-            label2.Font = new Font("Serif", 16);
-            label2.ForeColor = Color.Gray;
-
-            label1.Text = _title;
-            label2.Text = _message;
-
-            base.OnLoad(e);
-            SystemSounds.Exclamation.Play();
-            StartTimer();
+            base.Show();
         }
 
         private void StartTimer()
@@ -57,11 +45,6 @@ namespace DFAssist
             _timer = new Timer {Interval = 10000};
             _timer.Tick += TimerOnTick;
             _timer.Start();
-        }
-
-        private void TimerOnTick(object sender, EventArgs eventArgs)
-        {
-            Close();
         }
 
         private void PlaceLowerRight()
@@ -84,5 +67,65 @@ namespace DFAssist
             Left = rightmost.WorkingArea.Right - Width;
             Top = rightmost.WorkingArea.Bottom - (Height + 50);
         }
+
+        #region Events
+        private void TimerOnTick(object sender, EventArgs eventArgs)
+        {
+            Close();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void Toast_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void Toast_Load(object sender, EventArgs e)
+        {
+            PlaceLowerRight();
+
+            BackColor = DefaultForeColor;
+            ForeColor = DefaultBackColor;
+
+            label1.Font = new Font("Serif", 18, FontStyle.Bold);
+            label1.ForeColor = Color.White;
+            label2.Font = new Font("Serif", 16);
+            label2.ForeColor = Color.Gray;
+
+            label1.Text = _title;
+            label2.Text = _message;
+
+            SystemSounds.Exclamation.Play();
+            StartTimer();
+        }
+
+        private void Toast_Activated(object sender, EventArgs e)
+        {
+            if (!_allowFocus)
+            {
+                // Activate the window that previously had focus
+                NativeMethods.SetForegroundWindow(_currentForegroundWindow);
+            }
+        }
+
+        private void Toast_Shown(object sender, EventArgs e)
+        {
+            // Once the animation has completed the form can receive focus
+            _allowFocus = true;
+
+            // Close the form by sliding down.
+            _animator.Duration = 0;
+            _animator.Direction = FormAnimator.AnimationDirection.Down;
+        }
+        #endregion
     }
 }

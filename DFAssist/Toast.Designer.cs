@@ -40,6 +40,7 @@
             this.label1.Size = new System.Drawing.Size(35, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "label1";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label2
             // 
@@ -49,6 +50,7 @@
             this.label2.Size = new System.Drawing.Size(35, 13);
             this.label2.TabIndex = 1;
             this.label2.Text = "label2";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // Toast
             // 
@@ -59,6 +61,10 @@
             this.Controls.Add(this.label1);
             this.Name = "Toast";
             this.Text = "Form1";
+            this.Activated += new System.EventHandler(this.Toast_Activated);
+            this.Load += new System.EventHandler(this.Toast_Load);
+            this.Shown += new System.EventHandler(this.Toast_Shown);
+            this.Click += new System.EventHandler(this.Toast_Click);
             this.ResumeLayout(false);
             this.PerformLayout();
 
