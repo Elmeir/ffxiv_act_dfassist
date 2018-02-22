@@ -34,7 +34,7 @@ namespace DFAssist
         public static extern bool AnimateWindow(IntPtr hWnd, int dwTime, int dwFlags);
 
         // Activate or minimize a window
-        [DllImportAttribute("User32.DLL")]
+        [DllImport("User32.DLL")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
         
         [DllImport("Iphlpapi.dll", SetLastError = true)]

@@ -7,18 +7,20 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.EnterpriseServices.Internal;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Advanced_Combat_Tracker;
 using DFAssist.DataModel;
+using Timer = System.Windows.Forms.Timer;
 
 namespace DFAssist
 {
@@ -647,19 +649,60 @@ namespace DFAssist
             try
             {
                 _lastToast?.Close();
+                ToastDispose();
+                
+                Application.ThreadException += OnGuiUnhandedException;
+                AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-                _lastToast = new Toast(title, message, _networks);
+                _lastToast = new Toast(title, message, _networks) { Text = title };
+                _lastToast.Closing += LastToastOnClosing;
                 _lastToast.Show();
-
                 NativeMethods.ShowWindow(_lastToast.Handle, 9);
-
+                NativeMethods.SetForegroundWindow(_lastToast.Handle);
                 _lastToast.Activate();
+                
             }
             catch (Exception e)
             {
-                Logger.Exception(e, "l-toast-notification-error");
+                HandleUnhandledException(e);
+                _lastToast?.Close();
+                ToastDispose();
             }
         }
+
+        private void LastToastOnClosing(object sender, CancelEventArgs cancelEventArgs)
+        {
+            ToastDispose();
+        }
+
+        private void ToastDispose()
+        {
+            Application.ThreadException -= OnGuiUnhandedException;
+            AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+
+            if (_lastToast == null || _lastToast.IsDisposed)
+                return;
+
+            _lastToast.Closing -= LastToastOnClosing;
+            _lastToast.Dispose();
+        }
+
+        private static void HandleUnhandledException(Exception e)
+        {
+            if (e != null)
+                Logger.Exception(e, "l-toast-notification-error");
+        }
+
+        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            HandleUnhandledException(e.ExceptionObject as Exception);
+        }
+
+        private static void OnGuiUnhandedException(object sender, ThreadExceptionEventArgs e)
+        {
+            HandleUnhandledException(e.Exception);
+        }
+
         #endregion
 
         #region Events

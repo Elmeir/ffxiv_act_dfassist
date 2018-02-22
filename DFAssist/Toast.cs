@@ -14,13 +14,14 @@ namespace DFAssist
         private readonly FormAnimator _animator;
         private readonly ConcurrentDictionary<int, ProcessNet> _networks;
 
-        private bool _allowFocus;
-        private Timer _timer;
-        private IntPtr _currentForegroundWindow;
+        //private bool _allowFocus;
+        //private IntPtr _currentForegroundWindow;
 
         public Toast(string title, string message, ConcurrentDictionary<int, ProcessNet> networks)
         {
             InitializeComponent();
+
+            Disposed += OnDisposed;
 
             _title = title;
             _message = message;
@@ -30,22 +31,23 @@ namespace DFAssist
             ShowInTaskbar = false;
             FormBorderStyle = FormBorderStyle.None;
             TopMost = true;
+            
+            timer1.Interval = 10000;
         }
 
-        public new void Show()
+        private void OnDisposed(object sender, EventArgs eventArgs)
         {
-            // Determine the current foreground window so it can be reactivated each time this form tries to get the focus
-            _currentForegroundWindow = NativeMethods.GetForegroundWindow();
-
-            base.Show();
+            Disposed -= OnDisposed;
+            timer1.Stop();
         }
 
-        private void StartTimer()
-        {
-            _timer = new Timer {Interval = 10000};
-            _timer.Tick += TimerOnTick;
-            _timer.Start();
-        }
+        //public new void Show()
+        //{
+        //    // Determine the current foreground window so it can be reactivated each time this form tries to get the focus
+        //    _currentForegroundWindow = NativeMethods.GetForegroundWindow();
+
+        //    base.Show();
+        //}
 
         private void PlaceLowerRight()
         {
@@ -69,7 +71,7 @@ namespace DFAssist
         }
 
         #region Events
-        private void TimerOnTick(object sender, EventArgs eventArgs)
+        private void timer1_Tick(object sender, EventArgs e)
         {
             Close();
         }
@@ -105,26 +107,25 @@ namespace DFAssist
             label2.Text = _message;
 
             SystemSounds.Exclamation.Play();
-            StartTimer();
+            timer1.Start();
         }
 
         private void Toast_Activated(object sender, EventArgs e)
         {
-            if (!_allowFocus)
-            {
-                // Activate the window that previously had focus
-                NativeMethods.SetForegroundWindow(_currentForegroundWindow);
-            }
+            //if (!_allowFocus)
+            //{
+            //    // Activate the window that previously had focus
+            //    NativeMethods.SetForegroundWindow(_currentForegroundWindow);
+            //}
         }
 
         private void Toast_Shown(object sender, EventArgs e)
         {
             // Once the animation has completed the form can receive focus
-            _allowFocus = true;
+            //_allowFocus = true;
 
-            // Close the form by sliding down.
             _animator.Duration = 0;
-            _animator.Direction = FormAnimator.AnimationDirection.Down;
+            _animator.Direction = FormAnimator.AnimationDirection.Right;
         }
         #endregion
     }
